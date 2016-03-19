@@ -16,6 +16,7 @@ l0 = iris.data[0:NUM_TRAINING]
 l1 = iris.data[NUM_PER_CLASS:NUM_PER_CLASS+NUM_TRAINING]
 
 objPerc = Perceptron(ETA, EPOCHS)
+
 objPerc.train(l0, 0)
 objPerc.train(l1, 1)
 

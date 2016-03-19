@@ -72,8 +72,8 @@ class Perceptron:
             #print 'Y = ', Y
             Y = self.activation(Y)
             d = target
-            print 'Y = ', Y
-            print 'd = ', target
+            #print 'Y = ', Y
+            #print 'd = ', target
             if Y == 1 and target == self.ci:
                 correct = correct + 1
             else:
