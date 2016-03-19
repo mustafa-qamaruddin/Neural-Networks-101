@@ -7,11 +7,11 @@ class Perceptron:
     b = 0.001
     w = [-b, 0, 0]
     ## constant for feature index in dataset
-    fi = 1
-    fj = 2
+    fi = 0
+    fj = 1
     ## constant for classes to test only ignore rest
-    ci = 1
-    cj = 2
+    ci = 0
+    cj = 1
     def __init__(self, eta, epochs):
         self.eta = eta
         self.epochs = epochs
@@ -32,7 +32,7 @@ class Perceptron:
         counter = 0
         for T in data:
             ## SKIPS CLASSES TO LIMIT PROBLEM TO ONLY TWO CLASSES ##
-            if target[counter] != self.ci and target[counter] != self.cj:
+            if target != self.ci and target != self.cj:
                 counter = counter + 1
                 continue
             ## END SKIP ##
@@ -44,9 +44,9 @@ class Perceptron:
             Y = self.signum(V)
             #print 'Y = ', Y
             Y = self.activation(Y)
-            d = target[counter]
+            d = target
             #print 'Y = ', Y
-            print 'd = ', target[counter]
+            print 'd = ', target
             print 'W(n) = ', self.w
             self.w = self.w + self.eta * (d - Y) * numpy.array(X)
             ##print 'W(n+1) = ', self.w
