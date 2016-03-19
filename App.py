@@ -13,9 +13,14 @@ NUM_TRAINING = 20
 NUM_TESTING = 30
 
 l0 = iris.data[0:NUM_TRAINING]
-l1 = iris.data[NUM_PER_CLASS+1:NUM_PER_CLASS+NUM_TRAINING+1]
-print l0
-print l1
+l1 = iris.data[NUM_PER_CLASS:NUM_PER_CLASS+NUM_TRAINING]
+
 objPerc = Perceptron(ETA, EPOCHS)
 objPerc.train(l0, 0)
 objPerc.train(l1, 1)
+
+t0 = iris.data[NUM_TRAINING:NUM_PER_CLASS]
+t1 = iris.data[NUM_PER_CLASS+NUM_TRAINING:NUM_PER_CLASS+NUM_PER_CLASS]
+
+objPerc.test(t0, 0)
+objPerc.test(t1, 1)
