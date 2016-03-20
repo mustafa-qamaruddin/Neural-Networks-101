@@ -1,27 +1,34 @@
 from sklearn.datasets import load_iris
 from Perceptron import Perceptron
+from sklearn import preprocessing
 
 iris = load_iris()
 
 ## Constants
-b = 0.001 ## Bias
-ETA = 0.03
-EPOCHS = 100
+b = 0.0001 ## Bias
+ETA = 0.0001
+EPOCHS = 1000
 NUM_DATASET = 150
 NUM_PER_CLASS = 50
 NUM_TRAINING = 20
 NUM_TESTING = 30
 
-l0 = iris.data[0:NUM_TRAINING]
-l1 = iris.data[NUM_PER_CLASS:NUM_PER_CLASS+NUM_TRAINING]
+NUM_TOTAL_SAMPLES = iris.data.shape[0]
+NUM_FEATURES = iris.data.shape[1]
+
+Training_Data = []
+Testing_Data = []
+for i in range(0, NUM_TOTAL_SAMPLES):
+    Y = iris.target[i]
+    X = iris.data[i]
+    check_i = i % NUM_PER_CLASS
+    if check_i < NUM_TRAINING:
+        Training_Data.append([X, Y])
+    else:
+        Testing_Data.append([X, Y])
 
 objPerc = Perceptron(ETA, EPOCHS)
 
-objPerc.train(l0, 0)
-objPerc.train(l1, 1)
+objPerc.train(Training_Data)
 
-t0 = iris.data[NUM_TRAINING:NUM_PER_CLASS]
-t1 = iris.data[NUM_PER_CLASS+NUM_TRAINING:NUM_PER_CLASS+NUM_PER_CLASS]
-
-objPerc.test(t0, 0)
-objPerc.test(t1, 1)
+objPerc.test(Testing_Data)
