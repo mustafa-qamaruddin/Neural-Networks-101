@@ -19,8 +19,14 @@ class Perceptron:
         ## INITIAL WEGHTS
         self.w = [self.b, 0, 0]
         
-    def signum(self, V):
+    def sigmoid(self, V):
         return 1 / 1 + exp(V)
+
+    def signum(self, PHI):
+            if PHI > 0:
+                return 0
+            else:
+                return 1 
     
     def activation(self, PHI):
         if PHI > 0:
@@ -42,7 +48,7 @@ class Perceptron:
                 X = [1 ,X[self.fj], X[self.fj]] ## Inputs only two features
                 V = numpy.inner(self.w, X)
                 Y = self.signum(V)
-                Y = self.activation(Y)
+               # Y = self.activation(Y)
                 self.w = self.w + self.eta * (d - Y) * numpy.array(X)
                 print 'W(n+1) = ', self.w
                 counter = counter + 1
@@ -66,10 +72,10 @@ class Perceptron:
             V = numpy.inner(self.w, X)
             #print 'V = ', V
             Y = self.signum(V)
-            Y = self.activation(Y)
+            #Y = self.activation(Y)
             print 'Y = ', Y
             print 'd = ', d
-            if Y == 1:
+            if Y == d:
                 correct = correct + 1
             else:
                 wrong = wrong + 1
