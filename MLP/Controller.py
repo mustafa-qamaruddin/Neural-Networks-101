@@ -37,7 +37,6 @@ class Controller:
         ## normalize data
         self.data = preprocessing.normalize(iris.data)
         self.data = preprocessing.minmax_scale(self.data, (-1, 1))
-        print self.data
 
         # load data in arrays
         for i in range(0, len(self.data)):
@@ -55,4 +54,7 @@ class Controller:
         i = 1 ## number hidden layers
         j = 1000 ## number of epochs
         k = 20 ## number of hidden neurons
-        self.obj_mlp = MLP(self.int_num_features, self.int_num_classes, i, j, k)
+        l = 0.0001 ## eta learning rate
+        s = 0.1 ## step
+        self.obj_mlp = MLP(self.int_num_features, self.int_num_classes, i, j, k, l)
+        self.obj_mlp.train(self.training)
