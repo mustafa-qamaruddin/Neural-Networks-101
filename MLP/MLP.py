@@ -1,5 +1,7 @@
 import numpy
 from math import exp
+from matplotlib import pyplot
+
 
 class MLP:
     # properties
@@ -19,8 +21,12 @@ class MLP:
     wo = []
     wh = []
 
+    # mse
+    arr_mse = []
+
     ## initializations
-    def __init__(self, _int_num_input_neurons, _int_num_output_neurons, _int_num_hidden_layers, _int_num_epochs, _int_num_hidden_neurons, _dbl_eta):
+    def __init__(self, _int_num_input_neurons, _int_num_output_neurons, _int_num_hidden_layers, _int_num_epochs,
+                 _int_num_hidden_neurons, _dbl_eta):
         ## initialize properties
         self.int_num_input_neurons = _int_num_input_neurons
         self.int_num_output_neurons = _int_num_output_neurons
@@ -30,13 +36,16 @@ class MLP:
         self.dbl_eta = _dbl_eta
 
         ## initialize weights arrays
-        self.wo = [[self.dbl_w0 for x in range(self.int_num_hidden_neurons + 1)] for y in range(self.int_num_output_neurons)] ## bias +1
-        self.wh = [[self.dbl_w0 for x in range(self.int_num_input_neurons + 1)] for y in range(self.int_num_hidden_neurons)] ## bias +1
+        self.wo = [[self.dbl_w0 for x in range(self.int_num_hidden_neurons + 1)] for y in
+                   range(self.int_num_output_neurons)]  ## bias +1
+        self.wh = [[self.dbl_w0 for x in range(self.int_num_input_neurons + 1)] for y in
+                   range(self.int_num_hidden_neurons)]  ## bias +1
         return
 
     ## back-propagation-algorithm
     def train(self, training_set):
         ## loop epochs
+        mse = []
         for e in range(0, self.int_num_epochs):
             ## loop training set
             errors = []
@@ -48,28 +57,48 @@ class MLP:
                 d = training_set[t][1]
 
                 # forward path
-                hidden_output = self.hyberb(numpy.inner(self.wh, x))
-                temp = numpy.reshape(hidden_output, (self.int_num_hidden_neurons))
-                temp_temp = numpy.append(temp, self.dbl_bias)
-                output_output = self.hyberb(numpy.inner(self.wo, temp_temp))
-                error = d - output_output
-                errors = numpy.append(errors,  error)
+                actual_hidden_output = self.hyberb(numpy.inner(self.wh, x))
+
+                actual_hidden_output_plus_rshp = numpy.reshape(actual_hidden_output, (self.int_num_hidden_neurons))
+                actual_hidden_output_plus_bias = numpy.append(actual_hidden_output_plus_rshp, self.dbl_bias)
+
+                actual_output = self.hyberb(numpy.inner(self.wo, actual_hidden_output_plus_bias))
+
+                ## Question?! Why substract actual_output[3x1] Vector from scalar d = {0, 1, 2}
+                error = d - actual_output
+
+                ## erros will be used for mse
+                errors = numpy.append(errors, error)
 
                 ## backward path
-                error_signal_output = error * self.derivhyberb(numpy.inner(self.wo, temp_temp))
-                temp = numpy.reshape(error_signal_output, (self.int_num_hidden_neurons))
-                temp_temp = numpy.append(temp, self.dbl_bias)
-                partial = numpy.inner(self.wo, temp_temp)
-                error_signal_hidden = self.derivhyberb(numpy.inner(self.wh, x)) * partial
+                error_signal_output = error * self.derivhyberb(numpy.inner(self.wo, actual_hidden_output_plus_bias))
 
-                ## update weights
-                delta_wh = self.dbl_eta * numpy.inner(error_signal_hidden , x.transpose())
-                delta_wo = self.dbl_eta * numpy.inner(error_signal_output , hidden_output)
+                error_signal_output_rshp = numpy.reshape(error_signal_output, (self.int_num_hidden_neurons))
+                ####### note there is no input weights to bias node            #######
+                ####### add dumpy column for bias weights to avoid numpy error #######
+                error_signal_output_dump_bias = numpy.append(error_signal_output_rshp, self.dbl_bias)
+                error_signal_hidden = self.derivhyberb(numpy.inner(self.wh, x)) * numpy.inner(self.wo,
+                                                                                              error_signal_output_dump_bias)
+                ###dimensions of error_signal_hidden = (number_of_hidden_neurons x 1)
+                ## update weights hidden
+                tmp_wh = numpy.transpose(self.wh)
+                counter = 0
+                for x_ele in x:
+                    delta_wh = self.dbl_eta * error_signal_hidden * x_ele
+                    tmp_wh[counter] = delta_wh + tmp_wh[counter]  ## update weight
+                    counter = counter + 1
+                self.wh = tmp_wh.transpose()  ## weights updated
+                ## end for x
 
-                print delta_wh
-                print delta_wo
-
+                ## update weights output
+                delta_wo = self.dbl_eta * error_signal_output * actual_hidden_output
+                counter = 0
+                for delta_wo_ele in delta_wo:
+                    self.wo[counter] = self.wo[counter] + delta_wo_ele
+                    counter = counter + 1
+                    ## out weights updated
             ## end loop training set
+            self.arr_mse = numpy.append(self.arr_mse, numpy.mean(numpy.sum(numpy.square(errors))))
         ## end loop epochs
         return
 
@@ -78,7 +107,7 @@ class MLP:
         """
         :rtype: VECTOR SAME DIMENSIONS AS V
         """
-        #PHI.arange().reshape
+        # PHI.arange().reshape
         return (numpy.exp(V * 2) - 1) / (numpy.exp(V * 2) + 1)
 
     ## derivation of hyper-bolic function
@@ -86,5 +115,10 @@ class MLP:
         """
         :rtype: VECTOR SAME DIMENSIONS AS V
         """
-        #PHI.arange().reshape
+        # PHI.arange().reshape
         return 4 * numpy.exp(V * 2) / numpy.square(1 + numpy.exp(V * 2))
+
+    ## plot mse
+    def plotMSE(self):
+        pyplot.plot(self.arr_mse)
+        pyplot.show()
