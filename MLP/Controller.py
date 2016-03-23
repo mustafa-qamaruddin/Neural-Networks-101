@@ -19,7 +19,7 @@ class Controller:
     int_num_classes = 0
 
     # composition
-    obj_mlp = ''
+    obj_mlp = MLP
 
     # initializiation
     def __init__(self):
@@ -31,8 +31,8 @@ class Controller:
     def prepareDataSet(self, iris):
         self.int_num_classes = numpy.unique(iris.target).shape[0]
 
-        self.int_set_size = iris.data.shape[1]
-        self.int_num_features = iris.data.shape[0]
+        self.int_set_size = iris.data.shape[0]
+        self.int_num_features = iris.data.shape[1]
 
         ## normalize data
         self.data = preprocessing.normalize(iris.data)
@@ -41,7 +41,7 @@ class Controller:
         # load data in arrays
         for i in range(0, len(self.data)):
             Y = iris.target[i]
-            X = self.data[i]
+            X = numpy.append(self.data[i], self.obj_mlp.dbl_bias)
             check_i = i % self.int_num_per_class
             if check_i < self.int_training_size:
                 self.training.append([X, Y])
@@ -52,8 +52,8 @@ class Controller:
     def playMLP(self):
         # allow to test all combinations of settings
         i = 1 ## number hidden layers
-        j = 1000 ## number of epochs
-        k = 20 ## number of hidden neurons
+        j = 50 ## number of epochs
+        k = 3 ## number of hidden neurons
         l = 0.0001 ## eta learning rate
         s = 0.1 ## step
         self.obj_mlp = MLP(self.int_num_features, self.int_num_classes, i, j, k, l)
