@@ -1,5 +1,8 @@
 import numpy
+<<<<<<< 092ccac639dd494bd894d1cbe303c36c9c0d711e
 from math import exp
+=======
+>>>>>>> Task2 part1 convert perceptron to BatchPerceptron
 
 class MLP:
     # properties
@@ -10,8 +13,11 @@ class MLP:
     int_num_hidden_neurons = 0
     dbl_mse_threshold = 0.001
     dbl_eta = 0.0001
+<<<<<<< 092ccac639dd494bd894d1cbe303c36c9c0d711e
     dbl_bias = 0.0002
     dbl_w0 = 0.0002
+=======
+>>>>>>> Task2 part1 convert perceptron to BatchPerceptron
 
     arr_num_neurons_in_hidden_layers = []
 
@@ -30,8 +36,14 @@ class MLP:
         self.dbl_eta = _dbl_eta
 
         ## initialize weights arrays
+<<<<<<< 092ccac639dd494bd894d1cbe303c36c9c0d711e
         self.wo = [[self.dbl_w0 for x in range(self.int_num_hidden_neurons + 1)] for y in range(self.int_num_output_neurons)] ## bias +1
         self.wh = [[self.dbl_w0 for x in range(self.int_num_input_neurons + 1)] for y in range(self.int_num_hidden_neurons)] ## bias +1
+=======
+        self.wo = numpy.zeros(self.int_num_output_neurons, self.int_num_hidden_neurons + 1) ## bias +1
+        self.wh = numpy.zeros(self.int_num_hidden_neurons, self.int_num_input_neurons + 1) ## bias +1
+
+>>>>>>> Task2 part1 convert perceptron to BatchPerceptron
         return
 
     ## back-propagation-algorithm
@@ -39,6 +51,7 @@ class MLP:
         ## loop epochs
         for e in range(0, self.int_num_epochs):
             ## loop training set
+<<<<<<< 092ccac639dd494bd894d1cbe303c36c9c0d711e
             errors = []
             for t in range(0, len(training_set)):
                 # inputs
@@ -88,3 +101,13 @@ class MLP:
         """
         #PHI.arange().reshape
         return 4 * numpy.exp(V * 2) / numpy.square(1 + numpy.exp(V * 2))
+=======
+            for t in range(0, len(training_set)):
+                ## forward
+                return
+                ## backward
+                ## update weights
+            ## end loop training set
+        ## end loop epochs
+        return
+>>>>>>> Task2 part1 convert perceptron to BatchPerceptron
