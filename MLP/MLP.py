@@ -120,5 +120,7 @@ class MLP:
 
     ## plot mse
     def plotMSE(self):
+        pyplot.xlabel('Number of Epochs')
+        pyplot.ylabel('MSE (Mean Square Error)')
         pyplot.plot(self.arr_mse)
         pyplot.show()
