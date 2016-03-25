@@ -53,7 +53,7 @@ class Controller:
     def playMLP(self):
         # allow to test all combinations of settings
         i = 1  ## number hidden layers
-        step_epochs = 50  ## number of epochs
+        step_epochs = 5  ## number of epochs
         ################################################################################################################
         ######## To calculate the number of hidden nodes we use a general rule of: (Number of inputs + outputs) x 2/3###
         ################################################################################################################
@@ -64,3 +64,4 @@ class Controller:
             self.obj_mlp = MLP(self.int_num_features, self.int_num_classes, i, j * step_epochs, k, l)
             self.obj_mlp.train(self.training)
             self.obj_mlp.plotMSE()
+        self.obj_mlp.test(self.testing)
