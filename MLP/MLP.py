@@ -14,9 +14,9 @@ class MLP:
     dbl_eta = 0.0001
     dbl_bias = 0.0002
     dbl_w0 = 0.0002
-
+    overallaccuracy = 0.0
     arr_num_neurons_in_hidden_layers = []
-
+    CofusionMat = numpy.zeros((3,3))
     # weights
     wo = []
     wh = []
@@ -34,7 +34,8 @@ class MLP:
         self.int_num_epochs = _int_num_epochs
         self.int_num_hidden_neurons = _int_num_hidden_neurons
         self.dbl_eta = _dbl_eta
-
+        self.CofusionMat = numpy.zeros((_int_num_output_neurons , _int_num_output_neurons))
+        self.overallaccuracy = 0.0
         ## initialize weights arrays
         self.wo = [[self.dbl_w0 for x in range(self.int_num_hidden_neurons + 1)] for y in
                    range(self.int_num_output_neurons)]  ## bias +1
@@ -101,7 +102,26 @@ class MLP:
             self.arr_mse = numpy.append(self.arr_mse, numpy.mean(numpy.sum(numpy.square(errors))))
         ## end loop epochs
         return
-
+    ##############################################Testing Algorithm###############################################
+    def test(self,testing_set):
+        for t in range(0, len(testing_set)):
+                # inputs
+                x = testing_set[t][0]
+                d = testing_set[t][1]
+                # response
+                # forward path
+                actual_hidden_output = self.hyberb(numpy.inner(self.wh, x))
+                actual_hidden_output_plus_rshp = numpy.reshape(actual_hidden_output, (self.int_num_hidden_neurons))
+                actual_hidden_output_plus_bias = numpy.append(actual_hidden_output_plus_rshp, self.dbl_bias)
+                actual_output = self.hyberb(numpy.inner(self.wo, actual_hidden_output_plus_bias))
+                for acout in actual_output:
+                    if self.mysign(acout) == d:
+                        self.CofusionMat[d,acout] = self.CofusionMat[d,acout] + 1
+        self.overallaccuracy = numpy.sum(numpy.diagonal(self.CofusionMat))
+        print 'Confusiion Matrix ' , self.CofusionMat
+        print 'OverAllAcurracy',self.overallaccuracy,' %'
+        return
+    ###############################################################################################
     ## hyber-bolic function
     def hyberb(self, V):
         """
@@ -117,6 +137,12 @@ class MLP:
         """
         # PHI.arange().reshape
         return 4 * numpy.exp(V * 2) / numpy.square(1 + numpy.exp(V * 2))
+    #mysign
+    def mysign(self,y):
+        if y >= 0.0:
+            return 0
+        else:
+            return 1
 
     ## plot mse
     def plotMSE(self):
