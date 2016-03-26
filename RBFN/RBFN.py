@@ -58,6 +58,8 @@ class RBFN:
         self.initCentroids(training_set)
         self.kMeans(training_set)
         self.kMeansVariance(training_set)
+        self.plotSamples(training_set)
+        self.plotKCentroids()
         self.LMS(training_set)
         return
 
@@ -69,9 +71,17 @@ class RBFN:
     def plotMSE(self):
         pyplot.xlabel('Number of Epochs')
         pyplot.ylabel('MSE (Mean Square Error)')
-        print self.arr_mse
-        pyplot.plot(self.arr_mse)
+        print  self.arr_mse
+        pyplot.plot(self.arr_mse.tolist())
         pyplot.show()
+
+    # plot samples
+    def plotSamples(self, training_set):
+        return
+
+    # plot k centroids
+    def plotKCentroids(self):
+        return
 
     ## Random Centroids
     def initCentroids(self, training_set):
@@ -147,7 +157,7 @@ class RBFN:
                 d = training_set[t][1]
 
                 # Gaussian
-                g = [1 for y in range(0, self.int_num_hidden_neurons+1)] ## bias
+                g = [1 for y in range(0, self.int_num_hidden_neurons + 1)]  ## bias
                 for h in range(0, self.int_num_hidden_neurons):
                     g[h] = self.calcGaussian(x, self.arr_centroids[h], self.arr_sigma[h])
 
@@ -155,24 +165,27 @@ class RBFN:
                 o = numpy.inner(self.wo, g)
 
                 # error
-                e = d - o
-                errors.append(e)
+                error = d - o
+                errors.append(error)
 
                 # weight correction rule
-                delta_w = numpy.zeros([self.int_num_hidden_neurons+1, self.int_num_output_neurons])
+                delta_w = numpy.zeros([self.int_num_hidden_neurons + 1, self.int_num_output_neurons])
                 for h in g:
-                    numpy.append(delta_w, self.dbl_eta * e * h)
+                    numpy.append(delta_w, self.dbl_eta * error * h)
 
                 self.wo = self.wo + delta_w.transpose()
             ## end loop samples
-            mse = self.arr_mse, numpy.mean(numpy.sum(numpy.square(errors)))
+            mse = numpy.mean(numpy.sum(numpy.square(errors)))
             self.arr_mse = numpy.append(self.arr_mse, mse)
             if mse < self.dbl_mse_threshold:
                 break
+            print 'MSE'
+            print e
+            print mse
         ## end loop epochs
         return
 
     ## Gaussian e^[-1 * (x - c[h]) ^ 2 ]
     def calcGaussian(self, vec_a, vec_b, sigma):
         denominator = -2 * numpy.square(sigma)
-        return exp(self.calcDistance(vec_a , vec_b) / denominator)
+        return exp(self.calcDistance(vec_a, vec_b) / denominator)
