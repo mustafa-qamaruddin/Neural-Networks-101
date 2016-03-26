@@ -1,9 +1,10 @@
 import numpy
 from math import exp
 from matplotlib import pyplot
+import random
 
 
-class MLP:
+class RBFN:
     # properties
     int_num_epochs = 1000
     int_num_input_neurons = 0
@@ -24,6 +25,15 @@ class MLP:
     # mse
     arr_mse = []
 
+    # centroids
+    arr_centroids = []
+
+    # pos_vector = zeros(1,num_tr); % a vector to denote which point belongs to which center
+    arr_pos_vector = []
+
+    # variance of each hidden neuron
+    arr_sigma = []
+
     ## initializations
     def __init__(self, _int_num_input_neurons, _int_num_output_neurons, _int_num_hidden_layers, _int_num_epochs,
                  _int_num_hidden_neurons, _dbl_eta):
@@ -40,10 +50,90 @@ class MLP:
                    range(self.int_num_output_neurons)]  ## bias +1
         self.wh = [[self.dbl_w0 for x in range(self.int_num_input_neurons + 1)] for y in
                    range(self.int_num_hidden_neurons)]  ## bias +1
+
         return
 
-    ## back-propagation-algorithm
+    ## Train
     def train(self, training_set):
+        self.initCentroids(training_set)
+        self.kMeans(training_set)
+        self.kMeansVariance(training_set)
+        self.LMS(training_set)
+        return
+
+    ## Test
+    def test(self):
+        return
+
+    ## plot mse
+    def plotMSE(self):
+        pyplot.xlabel('Number of Epochs')
+        pyplot.ylabel('MSE (Mean Square Error)')
+        print self.arr_mse
+        pyplot.plot(self.arr_mse)
+        pyplot.show()
+
+    ## Random Centroids
+    def initCentroids(self, training_set):
+        for h in range(0, self.int_num_hidden_neurons):
+            sample = random.choice(training_set)
+            self.arr_centroids.append(sample[0])
+        return
+
+    ## K-Means
+    def kMeans(self, training_set):
+        ## loop training set
+        self.arr_pos_vector = [0 for x in range(0, len(training_set))]
+        for t in range(0, len(training_set)):
+            # inputs
+            x = training_set[t][0]
+
+            # response
+            d = training_set[t][1]
+
+            ## loop hidden neurons & find nearest prototype
+            eu_dist = []
+            for h in range(0, self.int_num_hidden_neurons):
+                eu_dist.append(self.calcDistance(x, self.arr_centroids[h]))
+
+            value_min_distance = min(eu_dist)
+            index_min_distance = eu_dist.index(value_min_distance)
+
+            ## update nearest prototype
+            self.arr_centroids[index_min_distance] = self.arr_centroids[index_min_distance] + value_min_distance
+            ## assign sample to prototype
+            self.arr_pos_vector[t] = index_min_distance
+
+        return
+
+    ## Claculate Euclidean
+    def calcDistance(self, vec_a, vec_b):
+        sum = 0
+        for i in range(0, len(vec_a)):
+            sum = sum + numpy.square(vec_a[i] - vec_b[i])
+        return numpy.sqrt(sum)
+
+    ## K-Means Variance
+    def kMeansVariance(self, training_set):
+        sum = numpy.zeros([self.int_num_hidden_neurons])
+        count = numpy.zeros([self.int_num_hidden_neurons])
+        ## loop hidden neurons
+        for h in range(0, self.int_num_hidden_neurons):
+            ## loop positions vector
+            for p in range(0, len(self.arr_pos_vector)):
+                if h == self.arr_pos_vector[p]:
+                    sum[h] = sum[h] + self.calcDistance(training_set[p][0], self.arr_centroids[h])
+                    count[h] = count[h] + 1
+
+        ## loop hidden neurons and divide by count
+        self.arr_sigma = []
+        for h in range(0, self.int_num_hidden_neurons):
+            self.arr_sigma.append(sum[h] / count[h])
+
+        return
+
+    ## Traiing with LMS
+    def LMS(self, training_set):
         ## loop epochs
         mse = []
         for e in range(0, self.int_num_epochs):
@@ -56,71 +146,33 @@ class MLP:
                 # response
                 d = training_set[t][1]
 
-                # forward path
-                actual_hidden_output = self.hyberb(numpy.inner(self.wh, x))
+                # Gaussian
+                g = [1 for y in range(0, self.int_num_hidden_neurons+1)] ## bias
+                for h in range(0, self.int_num_hidden_neurons):
+                    g[h] = self.calcGaussian(x, self.arr_centroids[h], self.arr_sigma[h])
 
-                actual_hidden_output_plus_rshp = numpy.reshape(actual_hidden_output, (self.int_num_hidden_neurons))
-                actual_hidden_output_plus_bias = numpy.append(actual_hidden_output_plus_rshp, self.dbl_bias)
+                # output? revise dimensions?
+                o = numpy.inner(self.wo, g)
 
-                actual_output = self.hyberb(numpy.inner(self.wo, actual_hidden_output_plus_bias))
+                # error
+                e = d - o
+                errors.append(e)
 
-                ## Question?! Why substract actual_output[3x1] Vector from scalar d = {0, 1, 2}
-                error = d - actual_output
+                # weight correction rule
+                delta_w = numpy.zeros([self.int_num_hidden_neurons+1, self.int_num_output_neurons])
+                for h in g:
+                    numpy.append(delta_w, self.dbl_eta * e * h)
 
-                ## erros will be used for mse
-                errors = numpy.append(errors, error)
-
-                ## backward path
-                error_signal_output = error * self.derivhyberb(numpy.inner(self.wo, actual_hidden_output_plus_bias))
-
-                error_signal_output_rshp = numpy.reshape(error_signal_output, (self.int_num_hidden_neurons))
-                ####### note there is no input weights to bias node            #######
-                ####### add dumpy column for bias weights to avoid numpy error #######
-                error_signal_output_dump_bias = numpy.append(error_signal_output_rshp, self.dbl_bias)
-                error_signal_hidden = self.derivhyberb(numpy.inner(self.wh, x)) * numpy.inner(self.wo,
-                                                                                              error_signal_output_dump_bias)
-                ###dimensions of error_signal_hidden = (number_of_hidden_neurons x 1)
-                ## update weights hidden
-                tmp_wh = numpy.transpose(self.wh)
-                counter = 0
-                for x_ele in x:
-                    delta_wh = self.dbl_eta * error_signal_hidden * x_ele
-                    tmp_wh[counter] = delta_wh + tmp_wh[counter]  ## update weight
-                    counter = counter + 1
-                self.wh = tmp_wh.transpose()  ## weights updated
-                ## end for x
-
-                ## update weights output
-                delta_wo = self.dbl_eta * error_signal_output * actual_hidden_output
-                counter = 0
-                for delta_wo_ele in delta_wo:
-                    self.wo[counter] = self.wo[counter] + delta_wo_ele
-                    counter = counter + 1
-                    ## out weights updated
-            ## end loop training set
-            self.arr_mse = numpy.append(self.arr_mse, numpy.mean(numpy.sum(numpy.square(errors))))
+                self.wo = self.wo + delta_w.transpose()
+            ## end loop samples
+            mse = self.arr_mse, numpy.mean(numpy.sum(numpy.square(errors)))
+            self.arr_mse = numpy.append(self.arr_mse, mse)
+            if mse < self.dbl_mse_threshold:
+                break
         ## end loop epochs
         return
 
-    ## hyber-bolic function
-    def hyberb(self, V):
-        """
-        :rtype: VECTOR SAME DIMENSIONS AS V
-        """
-        # PHI.arange().reshape
-        return (numpy.exp(V * 2) - 1) / (numpy.exp(V * 2) + 1)
-
-    ## derivation of hyper-bolic function
-    def derivhyberb(self, V):
-        """
-        :rtype: VECTOR SAME DIMENSIONS AS V
-        """
-        # PHI.arange().reshape
-        return 4 * numpy.exp(V * 2) / numpy.square(1 + numpy.exp(V * 2))
-
-    ## plot mse
-    def plotMSE(self):
-        pyplot.xlabel('Number of Epochs')
-        pyplot.ylabel('MSE (Mean Square Error)')
-        pyplot.plot(self.arr_mse)
-        pyplot.show()
+    ## Gaussian e^[-1 * (x - c[h]) ^ 2 ]
+    def calcGaussian(self, vec_a, vec_b, sigma):
+        denominator = -2 * numpy.square(sigma)
+        return exp(self.calcDistance(vec_a , vec_b) / denominator)

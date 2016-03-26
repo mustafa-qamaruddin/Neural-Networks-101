@@ -2,7 +2,7 @@ from sklearn.datasets import load_iris
 from sklearn import preprocessing
 import numpy
 
-from MLP import MLP
+from RBFN import RBFN
 
 
 class Controller:
@@ -20,7 +20,7 @@ class Controller:
     int_num_classes = 0
 
     # composition
-    obj_mlp = MLP
+    obj_rbfn = RBFN
 
     # initializiation
     def __init__(self):
@@ -50,17 +50,18 @@ class Controller:
                 self.testing.append([X, Y])
 
     # play the MLP
-    def playMLP(self):
+    def playRBFN(self):
         # allow to test all combinations of settings
         i = 1  ## number hidden layers
         step_epochs = 50  ## number of epochs
         ################################################################################################################
         ######## To calculate the number of hidden nodes we use a general rule of: (Number of inputs + outputs) x 2/3###
         ################################################################################################################
-        k = 3  ## number of hidden neurons
+        k = 7  ## number of hidden neurons
         l = 0.0001  ## eta learning rate
         s = 0.1  ## step
-        for j in range(0, 20):
-            self.obj_mlp = MLP(self.int_num_features, self.int_num_classes, i, j * step_epochs, k, l)
-            self.obj_mlp.train(self.training)
-            self.obj_mlp.plotMSE()
+        for j in range(1, 20): ## loop epochs settings
+            self.obj_rbfn = RBFN(self.int_num_features, self.int_num_classes, i, j * step_epochs, k, l)
+            self.obj_rbfn.train(self.training)
+            self.obj_rbfn.plotMSE()
+
