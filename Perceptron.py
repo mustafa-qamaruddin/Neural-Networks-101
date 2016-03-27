@@ -3,8 +3,10 @@ import numpy
 
 class Perceptron:
     eta = 0.0001
-    epochs = 100
+    epochs = 30
     thres = 1e-2
+    CONFUSION_MAT = numpy.zeros((2,2))
+    overallaccuracy = 0.0
     b = 0.0001
     w = [-b, 0, 0]
     ## constant for feature index in dataset
@@ -20,7 +22,8 @@ class Perceptron:
         self.b = 0.001
         ## INITIAL WEGHTS
         self.w = [self.b, 0, 0]
-        
+        self.CONFUSION_MAT = numpy.zeros((2,2))
+        self.overallaccuracy = 0.0
     def sigmoid(self, V):
         return 1 / 1 + exp(V)
 
@@ -93,6 +96,8 @@ class Perceptron:
 
     def test(self, data):
         print 'Testing:'
+        M = self.Get_Mean(data)
+        MX = self.Get_Max(data)
         correct = 0
         wrong = 0
         counter = 0
@@ -104,7 +109,7 @@ class Perceptron:
                 counter = counter + 1
                 continue
             ## END SKIP ##
-            X = [1 ,X[self.fj], X[self.fj]] ## Inputs only two features
+            X = [1 ,(X[self.fi] - M[0])/MX[0], (X[self.fj]-M[1])/MX[1]] ## Inputs only two features
             #print 'X = ', X
 
             V = numpy.inner(self.w, X)
@@ -114,9 +119,9 @@ class Perceptron:
             print 'Y = ', Y
             print 'd = ', d
             if Y == d:
-                correct = correct + 1
-            else:
-                wrong = wrong + 1
+               self.CONFUSION_MAT[d,Y] = self.CONFUSION_MAT[d,Y] + 1
             counter = counter + 1
-        print 'correct=', correct
-        print 'wrong=', wrong
+        self.overallaccuracy = numpy.sum(numpy.diagonal(self.CONFUSION_MAT))
+        print 'Confusiion Matrix '
+        print self.CONFUSION_MAT
+        print 'OverAllAcurracy',self.overallaccuracy,' %'

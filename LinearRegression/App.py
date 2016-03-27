@@ -1,7 +1,7 @@
 from sklearn.datasets import load_iris
 from LReg import LinearRegression
 from sklearn import preprocessing
-
+import numpy
 iris = load_iris()
 b = 0.001 ## Bias
 Err = 0
@@ -26,6 +26,8 @@ for i in range(0, NUM_TOTAL_SAMPLES):
         #print Training_Data
     else:
         Testing_Data.append([X, Y])
+numpy.random.shuffle(Training_Data)
+numpy.random.shuffle(Testing_Data)
 objPerc = LinearRegression(Err, EPOCHS,lamda)
 objPerc.train(Training_Data)
 objPerc.test(Testing_Data)

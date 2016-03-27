@@ -115,8 +115,10 @@ class MLP:
                 actual_hidden_output_plus_bias = numpy.append(actual_hidden_output_plus_rshp, self.dbl_bias)
                 actual_output = self.hyberb(numpy.inner(self.wo, actual_hidden_output_plus_bias))
                 for acout in actual_output:
+                    print 'Actual value: ',self.mysign(acout)
+                    print 'desired: ', d
                     if self.mysign(acout) == d:
-                        self.CofusionMat[d,acout] = self.CofusionMat[d,acout] + 1
+                        self.CofusionMat[d, self.mysign(acout)] = self.CofusionMat[d, self.mysign(acout)] + 1
         self.overallaccuracy = numpy.sum(numpy.diagonal(self.CofusionMat))
         print 'Confusiion Matrix ' , self.CofusionMat
         print 'OverAllAcurracy',self.overallaccuracy,' %'
