@@ -2,6 +2,7 @@ import numpy
 from math import exp
 from matplotlib import pyplot
 import random
+from pprint import pprint
 
 
 class RBFN:
@@ -15,6 +16,7 @@ class RBFN:
     dbl_eta = 0.0001
     dbl_bias = 0.0002
     dbl_w0 = 0.0002
+    dbl_tol = 0.0001
 
     arr_num_neurons_in_hidden_layers = []
 
@@ -34,6 +36,9 @@ class RBFN:
     # variance of each hidden neuron
     arr_sigma = []
 
+    # clusters
+    arr_clusters = []
+
     ## initializations
     def __init__(self, _int_num_input_neurons, _int_num_output_neurons, _int_num_hidden_layers, _int_num_epochs,
                  _int_num_hidden_neurons, _dbl_eta):
@@ -51,15 +56,25 @@ class RBFN:
         self.wh = [[self.dbl_w0 for x in range(self.int_num_input_neurons + 1)] for y in
                    range(self.int_num_hidden_neurons)]  ## bias +1
 
+        ## initialize k clusters
+        self.arr_clusters = [[] for x in range(0, self.int_num_hidden_neurons)]
+
+        ## reset arrays
+        self.arr_centroids = []
+        self.arr_sigma = []
+        self.arr_pos_vector = []
+
         return
 
-    ## Train
-    def train(self, training_set):
+    ## Run K-Means Once
+    def preTrain(self, training_set):
         self.initCentroids(training_set)
-        self.kMeans(training_set)
+        self.performKMeans(training_set)
         self.kMeansVariance(training_set)
-        self.plotSamples(training_set)
-        self.plotKCentroids()
+        return
+
+    ## Runk Iterative LMS
+    def train(self, training_set):
         self.LMS(training_set)
         return
 
@@ -90,8 +105,80 @@ class RBFN:
             self.arr_centroids.append(sample[0])
         return
 
+    ## Refine Centroids Using K-Means
+    def performKMeans(self, training_set):
+        ## while no more centroid reallocation
+        count = 0
+        while True:
+            ## loop training set
+            for t in range(0, len(training_set)):
+                # inputs
+                x = training_set[t][0]
+
+                # response
+                d = training_set[t][1]
+
+                ## loop centroids and calculate distance
+                min_distance = numpy.inf
+                min_index = -1
+                for c in range(0, len(self.arr_centroids)):
+                    distance = self.calcDistance(x, self.arr_centroids[c])
+                    if distance < min_distance:
+                        min_distance = distance
+                        min_index = c
+
+                self.arr_clusters[min_index].append(t)
+
+                # end loop centroids
+            # end loop training set
+
+            # recalculate centroids
+            arr_new_centroids = [[] for dummy in range(0, self.int_num_hidden_neurons)]
+            for c in range(0, self.int_num_hidden_neurons):
+                sum = [0 for dummy in range(0, self.int_num_input_neurons + 1)]
+                for t in range(0, len(self.arr_clusters[c])):
+                    the_index = self.arr_clusters[c][t]
+                    sum = sum + training_set[the_index][0]
+                arr_new_centroids[c] = [dummy / len(self.arr_clusters[c]) for dummy in sum]
+
+            # compare centroids with old centroids
+            if self.has_converged(self.arr_centroids, arr_new_centroids):
+                return
+            else:
+                self.arr_centroids = arr_new_centroids
+            count = count + 1
+            print 'K-Means Iteration ', count
+        return
+
+    ## K-Means Variance
+    def kMeansVariance(self, training_set):
+        sum = numpy.zeros([self.int_num_hidden_neurons])
+        count = numpy.zeros([self.int_num_hidden_neurons])
+        ## loop hidden neurons
+        for h in range(0, self.int_num_hidden_neurons):
+            ## loop clusters array
+            for t in range(0, len(self.arr_clusters[h])):
+                the_index = self.arr_clusters[h][t]
+                sum[h] = sum[h] + self.calcDistance(training_set[the_index][0], self.arr_centroids[h])
+                count[h] = count[h] + 1
+
+        ## loop hidden neurons and divide by count
+        self.arr_sigma = []
+        for h in range(0, self.int_num_hidden_neurons):
+            self.arr_sigma.append(sum[h] / count[h])
+
+        return
+
+    ## compare two lists of lists in O(n^2)
+    def has_converged(self, mu, oldmu):
+        for i in range(0, len(mu)):
+            for j in range(0, len(mu[i])):
+                if abs(mu[i][j] - oldmu[i][j]) > self.dbl_tol:
+                    return False
+        return True
+
     ## K-Means
-    def kMeans(self, training_set):
+    def wrongKMeans(self, training_set):
         ## loop training set
         self.arr_pos_vector = [0 for x in range(0, len(training_set))]
         for t in range(0, len(training_set)):
@@ -124,7 +211,7 @@ class RBFN:
         return numpy.sqrt(sum)
 
     ## K-Means Variance
-    def kMeansVariance(self, training_set):
+    def wrongKMeansVariance(self, training_set):
         sum = numpy.zeros([self.int_num_hidden_neurons])
         count = numpy.zeros([self.int_num_hidden_neurons])
         ## loop hidden neurons
