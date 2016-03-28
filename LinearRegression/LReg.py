@@ -6,9 +6,10 @@ class LinearRegression:
     epoch = 1
     lamda = 0.1
     b = 0.0001
+    overallaccuracy = 0.0
+    Confusion_Mat = numpy.zeros((2,2))
     w = [0, 0]
     I = numpy.eye(2)
-    print I
     ## constant for feature index in dataset
     fi = 0
     fj = 1
@@ -22,6 +23,8 @@ class LinearRegression:
         ## INITIAL WEGHTS
         self.w = [0, 0]
         self.I = numpy.eye(2)
+        self.Confusion_Mat = numpy.zeros((2,2))
+        self.overallaccuracy = 0.0
     def signum(self, PHI):
 
         if PHI > 0:
@@ -68,13 +71,12 @@ class LinearRegression:
                     continue
                 ## END SKIP ##
                 X = [(X[self.fi] - M[0])/MX[0], (X[self.fj]-M[1])/MX[1]] ## Inputs only two features
-                RXX = -1 * numpy.inner(X,X)
+                RXX = -1 * numpy.inner(numpy.transpose(X),X)
                 #print RXX
                 LI = self.lamda * self.I
                 INV =  numpy.linalg.inv(RXX + LI)
-                rdx = -1 * numpy.inner(X,d)
+                rdx = -1 * numpy.inner(numpy.transpose(X),d)
                 self.w =  numpy.inner(INV,rdx)
-                #print self.w
             ############################Testing LinearRegression##############################
     def test(self, data):
         print 'Testing:'
@@ -101,9 +103,9 @@ class LinearRegression:
             print 'Y = ', Y
             print 'd = ', d
             if Y == d:
-                correct = correct + 1
-            else:
-                wrong = wrong + 1
+               self.Confusion_Mat[d,Y] = self.Confusion_Mat[d,Y] + 1
             counter = counter + 1
-        print 'correct=', correct
-        print 'wrong=', wrong
+        self.overallaccuracy = numpy.sum(numpy.diagonal(self.Confusion_Mat))
+        print 'Confusiion Matrix '
+        print self.Confusion_Mat
+        print 'OverAllAcurracy',self.overallaccuracy,' %'

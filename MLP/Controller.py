@@ -1,6 +1,7 @@
 from sklearn.datasets import load_iris
 from sklearn import preprocessing
 import numpy
+from sqlalchemy.sql.functions import random
 
 from MLP import MLP
 
@@ -17,7 +18,7 @@ class Controller:
     int_training_size = 30
     int_testing_size = 20
     int_num_per_class = 50
-    int_num_classes = 0
+    int_num_classes = 50
 
     # composition
     obj_mlp = MLP
@@ -48,7 +49,8 @@ class Controller:
                 self.training.append([X, Y])
             else:
                 self.testing.append([X, Y])
-
+        numpy.random.shuffle(self.training)
+        numpy.random.shuffle(self.testing)
     # play the MLP
     def playMLP(self):
         # allow to test all combinations of settings
@@ -63,5 +65,5 @@ class Controller:
         for j in range(0, 20):
             self.obj_mlp = MLP(self.int_num_features, self.int_num_classes, i, j * step_epochs, k, l)
             self.obj_mlp.train(self.training)
-            self.obj_mlp.plotMSE()
+            #self.obj_mlp.plotMSE()
         self.obj_mlp.test(self.testing)
