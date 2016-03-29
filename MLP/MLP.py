@@ -1,6 +1,7 @@
 import numpy
 from math import exp
 from matplotlib import pyplot
+import pprint
 
 
 class MLP:
@@ -16,7 +17,7 @@ class MLP:
     dbl_w0 = 0.0002
     overallaccuracy = 0.0
     arr_num_neurons_in_hidden_layers = []
-    CofusionMat = numpy.zeros((3,3))
+    CofusionMat = numpy.zeros((3, 3))
     # weights
     wo = []
     wh = []
@@ -34,7 +35,7 @@ class MLP:
         self.int_num_epochs = _int_num_epochs
         self.int_num_hidden_neurons = _int_num_hidden_neurons
         self.dbl_eta = _dbl_eta
-        self.CofusionMat = numpy.zeros((_int_num_output_neurons , _int_num_output_neurons))
+        self.CofusionMat = numpy.zeros((_int_num_output_neurons, _int_num_output_neurons))
         self.overallaccuracy = 0.0
         ## initialize weights arrays
         self.wo = [[self.dbl_w0 for x in range(self.int_num_hidden_neurons + 1)] for y in
@@ -64,7 +65,8 @@ class MLP:
                 actual_hidden_output_plus_bias = numpy.append(actual_hidden_output_plus_rshp, self.dbl_bias)
 
                 actual_output = self.hyberb(numpy.inner(self.wo, actual_hidden_output_plus_bias))
-
+                actual_output = actual_output.tolist()
+                actual_output = actual_output.index(max(actual_output))
                 ## Question?! Why substract actual_output[3x1] Vector from scalar d = {0, 1, 2}
                 error = d - actual_output
 
@@ -73,13 +75,13 @@ class MLP:
 
                 ## backward path
                 error_signal_output = error * self.derivhyberb(numpy.inner(self.wo, actual_hidden_output_plus_bias))
-
                 error_signal_output_rshp = numpy.reshape(error_signal_output, (self.int_num_hidden_neurons))
+
                 ####### note there is no input weights to bias node            #######
                 ####### add dumpy column for bias weights to avoid numpy error #######
                 error_signal_output_dump_bias = numpy.append(error_signal_output_rshp, self.dbl_bias)
-                error_signal_hidden = self.derivhyberb(numpy.inner(self.wh, x)) * numpy.inner(self.wo,
-                                                                                              error_signal_output_dump_bias)
+                error_signal_hidden = self.derivhyberb(numpy.inner(self.wh, x)) * numpy.inner(self.wo, error_signal_output_dump_bias)
+
                 ###dimensions of error_signal_hidden = (number_of_hidden_neurons x 1)
                 ## update weights hidden
                 tmp_wh = numpy.transpose(self.wh)
@@ -102,27 +104,33 @@ class MLP:
             self.arr_mse = numpy.append(self.arr_mse, numpy.mean(numpy.sum(numpy.square(errors))))
         ## end loop epochs
         return
+
     ##############################################Testing Algorithm###############################################
-    def test(self,testing_set):
+    def test(self, testing_set):
         for t in range(0, len(testing_set)):
-                # inputs
-                x = testing_set[t][0]
-                d = testing_set[t][1]
-                # response
-                # forward path
-                actual_hidden_output = self.hyberb(numpy.inner(self.wh, x))
-                actual_hidden_output_plus_rshp = numpy.reshape(actual_hidden_output, (self.int_num_hidden_neurons))
-                actual_hidden_output_plus_bias = numpy.append(actual_hidden_output_plus_rshp, self.dbl_bias)
-                actual_output = self.hyberb(numpy.inner(self.wo, actual_hidden_output_plus_bias))
-                for acout in actual_output:
-                    print 'Actual value: ',self.mysign(acout)
-                    print 'desired: ', d
-                    if self.mysign(acout) == d:
-                        self.CofusionMat[d, self.mysign(acout)] = self.CofusionMat[d, self.mysign(acout)] + 1
-        self.overallaccuracy = numpy.sum(numpy.diagonal(self.CofusionMat))
-        print 'Confusiion Matrix ' , self.CofusionMat
-        print 'OverAllAcurracy',self.overallaccuracy,' %'
+            # inputs
+            x = testing_set[t][0]
+            d = testing_set[t][1]
+            # response
+            # forward path
+            actual_hidden_output = self.hyberb(numpy.inner(self.wh, x))
+            actual_hidden_output_plus_rshp = numpy.reshape(actual_hidden_output, (self.int_num_hidden_neurons))
+            actual_hidden_output_plus_bias = numpy.append(actual_hidden_output_plus_rshp, self.dbl_bias)
+            actual_output = self.hyberb(numpy.inner(self.wo, actual_hidden_output_plus_bias))
+            actual_output = actual_output.tolist()
+            actual_output = actual_output.index(max(actual_output))
+            self.CofusionMat[d, actual_output] = self.CofusionMat[d, actual_output] + 1
+
+        self.overallaccuracy = numpy.sum(numpy.diagonal(self.CofusionMat)) / len(testing_set)
+
+        print '# epochs', self.int_num_epochs
+        print '# hidden neurons', self.int_num_hidden_neurons
+        print 'Confusion Matrix'
+        pprint.pprint(self.CofusionMat)
+        print 'OverAllAcurracy', self.overallaccuracy, ' %'
+
         return
+
     ###############################################################################################
     ## hyber-bolic function
     def hyberb(self, V):
@@ -139,8 +147,9 @@ class MLP:
         """
         # PHI.arange().reshape
         return 4 * numpy.exp(V * 2) / numpy.square(1 + numpy.exp(V * 2))
-    #mysign
-    def mysign(self,y):
+
+    # mysign
+    def mysign(self, y):
         if y >= 0.0:
             return 0
         else:

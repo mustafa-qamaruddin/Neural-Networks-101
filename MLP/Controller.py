@@ -1,7 +1,7 @@
 from sklearn.datasets import load_iris
 from sklearn import preprocessing
 import numpy
-from sqlalchemy.sql.functions import random
+##from sqlalchemy.sql.functions import random
 
 from MLP import MLP
 
@@ -62,8 +62,10 @@ class Controller:
         k = 3  ## number of hidden neurons
         l = 0.0001  ## eta learning rate
         s = 0.1  ## step
-        for j in range(0, 20):
-            self.obj_mlp = MLP(self.int_num_features, self.int_num_classes, i, j * step_epochs, k, l)
-            self.obj_mlp.train(self.training)
-            #self.obj_mlp.plotMSE()
-        self.obj_mlp.test(self.testing)
+        for k in range(4, 100):
+            for j in range(1, 20):
+                self.obj_mlp = MLP(self.int_num_features, self.int_num_classes, i, j * step_epochs, k, l)
+                self.obj_mlp.train(self.training)
+                #self.obj_mlp.plotMSE()
+                self.obj_mlp.test(self.testing)
+            k += 5
