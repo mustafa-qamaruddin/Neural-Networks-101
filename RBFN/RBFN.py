@@ -75,6 +75,9 @@ class RBFN:
 
     ## Runk Iterative LMS
     def train(self, training_set):
+        self.initCentroids(training_set)
+        self.wrongKMeans(training_set)
+        self.wrongKMeansVariance(training_set)
         self.LMS(training_set)
         return
 
@@ -86,7 +89,6 @@ class RBFN:
     def plotMSE(self):
         pyplot.xlabel('Number of Epochs')
         pyplot.ylabel('MSE (Mean Square Error)')
-        print  self.arr_mse
         pyplot.plot(self.arr_mse.tolist())
         pyplot.show()
 
@@ -122,10 +124,14 @@ class RBFN:
                 min_distance = numpy.inf
                 min_index = -1
                 for c in range(0, len(self.arr_centroids)):
-                    distance = self.calcDistance(x, self.arr_centroids[c])
-                    if distance < min_distance:
-                        min_distance = distance
-                        min_index = c
+                    try:
+                        distance = self.calcDistance(x, self.arr_centroids[c])
+                        if distance < min_distance:
+                            min_distance = distance
+                            min_index = c
+                    except:
+                        print 'Cluster with zeros Samples'
+
 
                 self.arr_clusters[min_index].append(t)
 
@@ -135,6 +141,8 @@ class RBFN:
             # recalculate centroids
             arr_new_centroids = [[] for dummy in range(0, self.int_num_hidden_neurons)]
             for c in range(0, self.int_num_hidden_neurons):
+                if len(self.arr_clusters[c]) == 0:
+                    continue
                 sum = [0 for dummy in range(0, self.int_num_input_neurons + 1)]
                 for t in range(0, len(self.arr_clusters[c])):
                     the_index = self.arr_clusters[c][t]
@@ -198,6 +206,7 @@ class RBFN:
 
             ## update nearest prototype
             self.arr_centroids[index_min_distance] = self.arr_centroids[index_min_distance] + value_min_distance
+
             ## assign sample to prototype
             self.arr_pos_vector[t] = index_min_distance
 
@@ -246,33 +255,40 @@ class RBFN:
                 # Gaussian
                 g = [1 for y in range(0, self.int_num_hidden_neurons + 1)]  ## bias
                 for h in range(0, self.int_num_hidden_neurons):
-                    g[h] = self.calcGaussian(x, self.arr_centroids[h], self.arr_sigma[h])
+                    try:
+                        g[h] = self.calcGaussian(x, self.arr_centroids[h], self.arr_sigma[h])
+                    except:
+                        print 'Cluster With Zero Samples'
 
                 # output? revise dimensions?
-                o = numpy.inner(self.wo, g)
-
+                o = numpy.dot(self.wo, g)
+                o = o.tolist()
+                classifier = o.index(max(o))
                 # error
-                error = d - o
+                error = d - classifier  ##o
                 errors.append(error)
 
                 # weight correction rule
-                delta_w = numpy.zeros([self.int_num_hidden_neurons + 1, self.int_num_output_neurons])
-                for h in g:
-                    numpy.append(delta_w, self.dbl_eta * error * h)
-
+                delta_w = numpy.multiply(self.dbl_eta * error, g)
                 self.wo = self.wo + delta_w.transpose()
             ## end loop samples
-            mse = numpy.mean(numpy.sum(numpy.square(errors)))
+            mse = self.calcMSE(errors)
+            print mse
             self.arr_mse = numpy.append(self.arr_mse, mse)
             if mse < self.dbl_mse_threshold:
                 break
-            print 'MSE'
-            print e
-            print mse
         ## end loop epochs
         return
 
     ## Gaussian e^[-1 * (x - c[h]) ^ 2 ]
     def calcGaussian(self, vec_a, vec_b, sigma):
-        denominator = -2 * numpy.square(sigma)
+        denominator = -2 * sigma
         return exp(self.calcDistance(vec_a, vec_b) / denominator)
+
+    ## Calculate Mean Square Error
+    def calcMSE(self, list_input):
+        mse = 0.0
+        for ele in list_input:
+            mse = mse + numpy.square(ele)
+        cnt = len(list_input)
+        return mse / cnt

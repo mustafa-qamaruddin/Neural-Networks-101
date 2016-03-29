@@ -53,15 +53,15 @@ class Controller:
     def playRBFN(self):
         # allow to test all combinations of settings
         i = 1  ## number hidden layers
-        step_epochs = 30  ## number of epochs
+        step_epochs = 100  ## number of epochs
         ################################################################################################################
         ######## To calculate the number of hidden nodes we use a general rule of: (Number of inputs + outputs) x 2/3###
         ################################################################################################################
-        k = 3  ## number of hidden neurons
+        k = 30  ## number of hidden neurons
         l = 0.001  ## eta learning rate
         s = 0.1  ## step
-        for j in range(1, 20):  ## loop epochs settings
+        for j in range(1, 2):  ## loop epochs settings
             self.obj_rbfn = RBFN(self.int_num_features, self.int_num_classes, i, j * step_epochs, k, l)
-            self.obj_rbfn.preTrain(self.training)
+            ##self.obj_rbfn.preTrain(self.training)
             self.obj_rbfn.train(self.training)
             self.obj_rbfn.plotMSE()
