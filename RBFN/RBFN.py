@@ -262,15 +262,18 @@ class RBFN:
 
                 # output? revise dimensions?
                 o = numpy.dot(self.wo, g)
-                o = o.tolist()
-                classifier = o.index(max(o))
+                ##o = o.tolist()
+                ##classifier = o.index(max(o))
                 # error
-                error = d - classifier  ##o
+                error = d - o  ##o
                 errors.append(error)
 
                 # weight correction rule
-                delta_w = numpy.multiply(self.dbl_eta * error, g)
-                self.wo = self.wo + delta_w.transpose()
+                delta_w = self.dbl_eta * error
+                ##self.wo = self.wo + delta_w.transpose()
+                wo_cnt = 0
+                for each_weight in self.wo:
+                    self.wo[wo_cnt] = each_weight + delta_w[wo_cnt]
             ## end loop samples
             mse = self.calcMSE(errors)
             print mse
