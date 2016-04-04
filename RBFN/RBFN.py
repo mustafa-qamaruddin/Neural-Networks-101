@@ -12,7 +12,7 @@ class RBFN:
     int_num_output_neurons = 0
     int_num_hidden_layers = 0
     int_num_hidden_neurons = 0
-    dbl_mse_threshold = 0.001
+    dbl_mse_threshold = 3
     dbl_eta = 0.0001
     dbl_bias = 0.0002
     dbl_w0 = 0.0002
@@ -205,12 +205,17 @@ class RBFN:
             index_min_distance = eu_dist.index(value_min_distance)
 
             ## update nearest prototype
-            self.arr_centroids[index_min_distance] = self.arr_centroids[index_min_distance] + value_min_distance
+            self.arr_centroids[index_min_distance] = self.calcHalfDistanceNewCentroid(self.arr_centroids[index_min_distance], x)
 
             ## assign sample to prototype
             self.arr_pos_vector[t] = index_min_distance
 
         return
+
+    ## Claculate (x - c) . 2
+    def calcHalfDistanceNewCentroid(self, vec_a, vec_b):
+        return numpy.subtract(vec_a, vec_b) / 2
+
 
     ## Claculate Euclidean
     def calcDistance(self, vec_a, vec_b):
@@ -266,14 +271,17 @@ class RBFN:
                 ##classifier = o.index(max(o))
                 # error
                 error = d - o  ##o
-                errors.append(error)
+
+                half_error_squared = self.halfErrorSquared(error)
+                errors.append(half_error_squared)
 
                 # weight correction rule
-                delta_w = self.dbl_eta * error
+                scalar_value = self.dbl_eta * half_error_squared
+                delta_w = numpy.multiply(scalar_value, g)
                 ##self.wo = self.wo + delta_w.transpose()
                 wo_cnt = 0
                 for each_weight in self.wo:
-                    self.wo[wo_cnt] = each_weight + delta_w[wo_cnt]
+                    self.wo[wo_cnt] = each_weight + delta_w
             ## end loop samples
             mse = self.calcMSE(errors)
             print mse
@@ -282,6 +290,14 @@ class RBFN:
                 break
         ## end loop epochs
         return
+
+    ## calculate 1/2 e ^ 2
+    def halfErrorSquared(self, vector):
+        sum = 0
+        for e in vector:
+            sum += numpy.square(e)
+        ret = sum / 2
+        return ret;
 
     ## Gaussian e^[-1 * (x - c[h]) ^ 2 ]
     def calcGaussian(self, vec_a, vec_b, sigma):
@@ -292,6 +308,6 @@ class RBFN:
     def calcMSE(self, list_input):
         mse = 0.0
         for ele in list_input:
-            mse = mse + numpy.square(ele)
+            mse = mse + ele
         cnt = len(list_input)
         return mse / cnt
