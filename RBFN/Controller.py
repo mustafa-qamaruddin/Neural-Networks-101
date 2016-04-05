@@ -36,9 +36,9 @@ class Controller:
         self.int_num_features = iris.data.shape[1]
 
         ## normalize data
-        ##self.data = preprocessing.normalize(iris.data)
-        ##self.data = preprocessing.minmax_scale(self.data, (-1, 1))
-        self.data = iris.data
+        self.data = preprocessing.normalize(iris.data)
+        #self.data = preprocessing.minmax_scale(iris.data, (-1, 1))
+        #self.data = iris.data
         # load data in arrays
         for i in range(0, len(self.data)):
             Y = iris.target[i]
@@ -64,4 +64,9 @@ class Controller:
             self.obj_rbfn = RBFN(self.int_num_features, self.int_num_classes, i, j * step_epochs, k, l)
             ##self.obj_rbfn.preTrain(self.training)
             self.obj_rbfn.train(self.training)
-            self.obj_rbfn.plotMSE()
+            #self.obj_rbfn.plotMSE()
+
+
+    # test single sample
+    def testSingle(self, X):
+        return 1 # class
