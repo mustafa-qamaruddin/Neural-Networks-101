@@ -2,6 +2,7 @@ from View import View
 from StateOfNature import StateOfNature
 from PIL import Image
 import glob
+import cv2
 
 class Controller:
     arr_objs_states_of_nature = []
@@ -21,7 +22,7 @@ class Controller:
         for filename in glob.glob(dir_name+'/*.jpg'):  # assuming gif
             if counter == 0:
                 break
-            im = Image.open(filename)
+            im = cv2.imread(filename, 0)
             obj_state_of_nature.arr_training_set.append(im)
             counter -= 1
         self.arr_objs_states_of_nature.append(obj_state_of_nature)
