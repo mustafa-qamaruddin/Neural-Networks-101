@@ -42,6 +42,11 @@ class View(Frame):
         messagebox.showinfo('SIFT Done', 'SIFT for images in Memory was Calculated!')
         return
 
+    def trainSVM(self):
+        self.ctrl.trainSVM()
+        messagebox.showinfo('SVM Done', 'SVM found!')
+        return
+
     def createWidgets(self):
         Label(self.master, text="Train States of Nature").grid(row=0, column=0, columnspan=3, padx=self.padding,
                                                                pady=self.padding, sticky=E)
@@ -112,6 +117,7 @@ class View(Frame):
         self.b4 = Button(self.master, text="Open Class IV", command=lambda: self.handleFileInputWidget(self.e4, self.ee4))
         self.b5 = Button(self.master, text="Open Class V", command=lambda: self.handleFileInputWidget(self.e5, self.ee5))
         self.b6 = Button(self.master, text="Apply SIFT", command=self.handleSIFT)
+        self.b7 = Button(self.master, text="Train SVM", command=self.trainSVM)
 
         ## Buttons Grid
         self.b1.grid(row=1, column=4, sticky=W + E)
@@ -120,6 +126,7 @@ class View(Frame):
         self.b4.grid(row=4, column=4, sticky=W + E)
         self.b5.grid(row=5, column=4, sticky=W + E)
         self.b6.grid(row=6, columnspan=5, sticky=W + E)
+        self.b7.grid(row=7, columnspan=5, sticky=W + E)
 
     def __init__(self, ctrl, master=None):
         if master is None:

@@ -1,5 +1,6 @@
-1
+from sklearn import svm
 from cv2 import *
+
 
 class StateOfNature:
     arr_training_set = []
@@ -12,7 +13,6 @@ class StateOfNature:
         return
 
     def applySIFT(self):
-
         for img in self.arr_training_set:
             imshow('image', img)
             waitKey(0)
@@ -31,3 +31,12 @@ class StateOfNature:
             imshow('image', out_img)
             waitKey(0)
         return
+
+    def getArrKeyPoints(self):
+        return self.arr_key_points
+
+    def getLabel(self):
+        return self.str_label
+
+    def getLabelVector(self):
+        return [self.str_label for x in range(len(self.arr_key_points))]

@@ -32,3 +32,10 @@ class Controller:
         for obj in self.arr_objs_states_of_nature:
             obj.applySIFT()
         return
+
+    def applySVM(self):
+        clf = svm.SVC()
+        for obj in self.arr_objs_states_of_nature:
+            clf.fit(obj.getArrKeyPoints(), obj.getLabelArray())
+        ##clf.predict()
+        return
