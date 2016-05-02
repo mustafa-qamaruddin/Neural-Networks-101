@@ -1,4 +1,5 @@
-import cv2
+1
+from cv2 import *
 
 class StateOfNature:
     arr_training_set = []
@@ -13,11 +14,11 @@ class StateOfNature:
     def applySIFT(self):
 
         for img in self.arr_training_set:
-            cv2.imshow('image', img)
-            cv2.waitKey(0)
+            imshow('image', img)
+            waitKey(0)
 
             # Initiate SIFT detector
-            orb = cv2.ORB_create()
+            orb = ORB_create()
 
             # find the keypoints and descriptors with SIFT
             kp, des = orb.detectAndCompute(img, None)
@@ -26,7 +27,7 @@ class StateOfNature:
             self.arr_descriptors.append(des)
 
             out_img = None
-            out_img = cv2.drawKeypoints(img, kp, out_img)
-            cv2.imshow('image', out_img)
-            cv2.waitKey(0)
+            out_img = drawKeypoints(img, kp, out_img)
+            imshow('image', out_img)
+            waitKey(0)
         return

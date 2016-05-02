@@ -1,7 +1,6 @@
-from Tkinter import *
-from tkFileDialog import *
-import tkMessageBox
-
+from tkinter import *
+from tkinter import filedialog
+from tkinter import messagebox
 
 class View(Frame):
     master = None
@@ -32,15 +31,15 @@ class View(Frame):
         toplevel.geometry("%dx%d+%d+%d" % (size + (x, y)))
 
     def handleFileInputWidget(self, obj_entry, obj_entry_label):
-        dir_name = askdirectory(parent=self.master)
+        dir_name = filedialog.askdirectory(parent=self.master)
         obj_entry.insert(END, dir_name)
         self.ctrl.importImagesFrmFolder(dir_name, obj_entry_label.get())
-        tkMessageBox.showinfo('Import Done', 'Images were loaded in Memory!')
+        messagebox.showinfo('Import Done', 'Images were loaded in Memory!')
         return
 
     def handleSIFT(self):
         self.ctrl.findKeyPoints()
-        tkMessageBox.showinfo('SIFT Done', 'SIFT for images in Memory was Calculated!')
+        messagebox.showinfo('SIFT Done', 'SIFT for images in Memory was Calculated!')
         return
 
     def createWidgets(self):
