@@ -37,9 +37,11 @@ class StateOfNature:
 
         # Initiate SIFT detector
         detector = cv2.xfeatures2d.SIFT_create()
-
-        # find the keypoints and descriptors with SIFT
-        kp, des = detector.detectAndCompute(image, None)
+        try:
+            # find the keypoints and descriptors with SIFT
+            kp, des = detector.detectAndCompute(image, None)
+        except:
+            print("I/O Exception")
 
         # Convert Objects 2 Arrays ?
         samples = numpy.array(des)

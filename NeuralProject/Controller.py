@@ -79,7 +79,7 @@ class Controller:
         cv2.rectangle(img, (x_min, y_min), (x_max, y_max), (255, 0, 0), 1)
         # write text
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(img, label, (x_min, y_min), font, 1, (255, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(img, label, (x_min, y_min+20), font, 1, (255, 0, 0), 1, cv2.LINE_AA)
         # show image
         cv2.imshow('image', img)
         cv2.waitKey(0)
@@ -103,3 +103,18 @@ class Controller:
             if y >= max_y:
                 max_y = y
         return min_x, max_x, min_y, max_y
+
+    def testSVM(self):
+        counter = 0
+        correct = 0
+        for obj in self.arr_objs_states_of_nature:
+            samples = obj.getSamples()
+            for i in range(len(samples)):
+                classification = self.classifier.predict(samples[i])
+                index = self.countVotes(classification)
+                tempo = self.arr_objs_states_of_nature[int(index) - 1]
+                if tempo.getLabel() == obj.getLabel():
+                    correct = correct + 1
+                counter = counter + 1
+        overall_accuracy = correct / counter * 100
+        return overall_accuracy
