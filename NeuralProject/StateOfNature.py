@@ -1,42 +1,65 @@
 from sklearn import svm
 from cv2 import *
-
+import numpy as numpy
+import cv2
 
 class StateOfNature:
     arr_training_set = []
-    arr_key_points = []
-    arr_descriptors = []
+    arr_samples = []
+    arr_responses = []
     str_label = ''
+    int_label = -1
 
-    def __init__(self, _label):
+    def __init__(self, _label, _index):
         self.str_label = _label
+        self.int_label = _index
         return
 
     def applySIFT(self):
         for img in self.arr_training_set:
-            imshow('image', img)
-            waitKey(0)
-
-            # Initiate SIFT detector
-            orb = ORB_create()
-
-            # find the keypoints and descriptors with SIFT
-            kp, des = orb.detectAndCompute(img, None)
-
-            self.arr_key_points.append(kp)
-            self.arr_descriptors.append(des)
-
-            out_img = None
-            out_img = drawKeypoints(img, kp, out_img)
-            imshow('image', out_img)
-            waitKey(0)
+            samples, responses = self.mqSIFT(img)
+            ## ??!! ##
+            responses = numpy.tile(self.int_label, len(samples))
+            self.arr_samples.append(samples)
+            self.arr_responses.append(responses)
         return
 
-    def getArrKeyPoints(self):
-        return self.arr_key_points
+    def getSamples(self):
+        return self.arr_samples
+
+    def getResponses(self):
+        return self.arr_responses
+
+    def mqSIFT(self, image):
+        # Display Original Image
+        #imshow('image', image)
+        #waitKey(0)
+
+        # Initiate SIFT detector
+        detector = cv2.xfeatures2d.SIFT_create()
+
+        # find the keypoints and descriptors with SIFT
+        kp, des = detector.detectAndCompute(image, None)
+
+        # Convert Objects 2 Arrays ?
+        samples = numpy.array(des)
+        responses = numpy.arange(len(kp), dtype=numpy.integer)
+
+        out_img = None
+        out_img = drawKeypoints(image, kp, out_img)
+
+        # Display Image with SIFT Key Points
+        #imshow('image', out_img)
+        #waitKey(0)
+
+        return samples, responses
 
     def getLabel(self):
         return self.str_label
 
-    def getLabelVector(self):
-        return [self.str_label for x in range(len(self.arr_key_points))]
+    def getSIFTKP(self, input_image):
+        # Initiate SIFT detector
+        detector = cv2.xfeatures2d.SIFT_create()
+
+        # find the keypoints and descriptors with SIFT
+        return detector.detect(input_image, None)

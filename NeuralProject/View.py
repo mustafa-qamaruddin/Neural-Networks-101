@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 
+
 class View(Frame):
     master = None
     padding = 10
@@ -30,11 +31,18 @@ class View(Frame):
         y = h / 2 - size[1] / 2
         toplevel.geometry("%dx%d+%d+%d" % (size + (x, y)))
 
-    def handleFileInputWidget(self, obj_entry, obj_entry_label):
+    def handleFileInputWidget(self, obj_entry, obj_entry_label, int_index):
         dir_name = filedialog.askdirectory(parent=self.master)
         obj_entry.insert(END, dir_name)
-        self.ctrl.importImagesFrmFolder(dir_name, obj_entry_label.get())
+        self.ctrl.importImagesFrmFolder(dir_name, obj_entry_label.get(), int_index)
         messagebox.showinfo('Import Done', 'Images were loaded in Memory!')
+        return
+
+    def handleImage(self, obj_entry):
+        file_name = filedialog.askopenfilename(parent=self.master)
+        obj_entry.insert(END, file_name)
+        result = self.ctrl.predict(file_name)
+        messagebox.showinfo('Test Done', 'Classification = %s'%(result))
         return
 
     def handleSIFT(self):
@@ -43,7 +51,7 @@ class View(Frame):
         return
 
     def trainSVM(self):
-        self.ctrl.trainSVM()
+        self.ctrl.applySVM()
         messagebox.showinfo('SVM Done', 'SVM found!')
         return
 
@@ -106,16 +114,21 @@ class View(Frame):
         ## Default Values for Class Labels
         self.ee1.insert(END, "Apple")
         self.ee2.insert(END, "Helicopter")
-        self.ee3.insert(END, "Aeroplane")
+        self.ee3.insert(END, "Car")
         self.ee4.insert(END, "Cat")
         self.ee5.insert(END, "Laptop")
 
         ## Buttons
-        self.b1 = Button(self.master, text="Open Class I", command=lambda: self.handleFileInputWidget(self.e1, self.ee1))
-        self.b2 = Button(self.master, text="Open Class II", command=lambda: self.handleFileInputWidget(self.e2, self.ee2))
-        self.b3 = Button(self.master, text="Open Class III", command=lambda: self.handleFileInputWidget(self.e3, self.ee3))
-        self.b4 = Button(self.master, text="Open Class IV", command=lambda: self.handleFileInputWidget(self.e4, self.ee4))
-        self.b5 = Button(self.master, text="Open Class V", command=lambda: self.handleFileInputWidget(self.e5, self.ee5))
+        self.b1 = Button(self.master, text="Open Class I",
+                         command=lambda: self.handleFileInputWidget(self.e1, self.ee1, 1))
+        self.b2 = Button(self.master, text="Open Class II",
+                         command=lambda: self.handleFileInputWidget(self.e2, self.ee2, 2))
+        self.b3 = Button(self.master, text="Open Class III",
+                         command=lambda: self.handleFileInputWidget(self.e3, self.ee3, 3))
+        self.b4 = Button(self.master, text="Open Class IV",
+                         command=lambda: self.handleFileInputWidget(self.e4, self.ee4, 4))
+        self.b5 = Button(self.master, text="Open Class V",
+                         command=lambda: self.handleFileInputWidget(self.e5, self.ee5, 5))
         self.b6 = Button(self.master, text="Apply SIFT", command=self.handleSIFT)
         self.b7 = Button(self.master, text="Train SVM", command=self.trainSVM)
 
@@ -127,6 +140,15 @@ class View(Frame):
         self.b5.grid(row=5, column=4, sticky=W + E)
         self.b6.grid(row=6, columnspan=5, sticky=W + E)
         self.b7.grid(row=7, columnspan=5, sticky=W + E)
+
+        # Test
+        self.t1 = Label(self.master, text="Test:")
+        self.t2 = Entry(self.master)
+        self.t3 = Button(self.master, text="Open Image File", command=lambda: self.handleImage(self.t2))
+
+        self.t1.grid(row=8, column=0, sticky=W + E)
+        self.t2.grid(row=8, column=1, sticky=W + E)
+        self.t3.grid(row=8, column=2, sticky=W + E)
 
     def __init__(self, ctrl, master=None):
         if master is None:
