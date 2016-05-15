@@ -6,11 +6,14 @@ import cv2
 from mqSVM import mqSVM
 import numpy
 import sys
+from mqMLP import mqMLP
 
 
 class Controller:
     arr_objs_states_of_nature = []
     classifier = None
+    # composition
+    obj_mlp = None
 
     def __init__(self):
         return
@@ -79,7 +82,7 @@ class Controller:
         cv2.rectangle(img, (x_min, y_min), (x_max, y_max), (255, 0, 0), 1)
         # write text
         font = cv2.FONT_HERSHEY_SIMPLEX
-        cv2.putText(img, label, (x_min, y_min+20), font, 1, (255, 0, 0), 1, cv2.LINE_AA)
+        cv2.putText(img, label, (x_min, y_min + 20), font, 1, (255, 0, 0), 1, cv2.LINE_AA)
         # show image
         cv2.imshow('image', img)
         cv2.waitKey(0)
@@ -89,7 +92,7 @@ class Controller:
         min_x = sys.maxsize
         min_y = sys.maxsize
         max_x = -sys.maxsize - 1
-        max_y = -sys.maxsize- 1
+        max_y = -sys.maxsize - 1
         for kp in key_points:
             x = int(kp.pt[0])
             y = int(kp.pt[1])
@@ -113,6 +116,41 @@ class Controller:
                 classification = self.classifier.predict(samples[i])
                 index = self.countVotes(classification)
                 tempo = self.arr_objs_states_of_nature[int(index) - 1]
+                if tempo.getLabel() == obj.getLabel():
+                    correct = correct + 1
+                counter = counter + 1
+        overall_accuracy = correct / counter * 100
+        return overall_accuracy
+
+    def trainMLP(self):
+        # allow to test all combinations of settings
+        i = 1  ## number hidden layers
+        step_epochs = 5  ## number of epochs
+        ################################################################################################################
+        ######## To calculate the number of hidden nodes we use a general rule of: (Number of inputs + outputs) x 2/3###
+        ################################################################################################################
+        k = 18  ## number of hidden neurons
+        l = 0.01  ## eta learning rate
+        for j in range(1):
+            self.obj_mlp = mqMLP(128, len(self.arr_objs_states_of_nature), i, j * step_epochs, k, l)
+            for obj in self.arr_objs_states_of_nature:
+                samples = obj.getSamples()
+                responses = obj.getResponses()
+                for i in range(len(samples)):
+                    self.obj_mlp.train(samples[i], responses[i])
+
+    def testMLP(self):
+        counter = 0
+        correct = 0
+        for obj in self.arr_objs_states_of_nature:
+            samples = obj.getSamples()
+            for i in range(len(samples)):
+                classification = self.obj_mlp.test(samples[i])
+                if isinstance(classification, list):
+                    index = self.countVotes(classification)
+                    tempo = self.arr_objs_states_of_nature[int(index) - 1]
+                else:
+                    tempo = self.arr_objs_states_of_nature[int(classification)]
                 if tempo.getLabel() == obj.getLabel():
                     correct = correct + 1
                 counter = counter + 1

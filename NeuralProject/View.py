@@ -60,6 +60,16 @@ class View(Frame):
         messagebox.showinfo('Test Done', 'Overall Accuracy = %{0}'.format(result))
         return
 
+    def trainMLP(self):
+        self.ctrl.trainMLP()
+        messagebox.showinfo('SVM Done', 'MLP training is done!')
+        return
+
+    def testMLP(self):
+        result = self.ctrl.testMLP()
+        messagebox.showinfo('Test Done', 'Overall Accuracy = %{0}'.format(result))
+        return
+
     def createWidgets(self):
         Label(self.master, text="Train States of Nature").grid(row=0, column=0, columnspan=3, padx=self.padding,
                                                                pady=self.padding, sticky=E)
@@ -137,6 +147,8 @@ class View(Frame):
         self.b6 = Button(self.master, text="Apply SIFT", command=self.handleSIFT)
         self.b7 = Button(self.master, text="Train SVM", command=self.trainSVM)
         self.b8 = Button(self.master, text="Test SVM", command=self.testSVM)
+        self.b9 = Button(self.master, text="Train MLP", command=self.trainMLP)
+        self.b10 = Button(self.master, text="Test MLP", command=self.testMLP)
 
         ## Buttons Grid
         self.b1.grid(row=1, column=4, sticky=W + E)
@@ -147,15 +159,17 @@ class View(Frame):
         self.b6.grid(row=6, columnspan=5, sticky=W + E)
         self.b7.grid(row=7, columnspan=5, sticky=W + E)
         self.b8.grid(row=8, columnspan=5, sticky=W + E)
+        self.b9.grid(row=9, columnspan=5, sticky=W + E)
+        self.b10.grid(row=10, columnspan=5, sticky=W + E)
 
         # Test
         self.t1 = Label(self.master, text="Test:")
         self.t2 = Entry(self.master)
         self.t3 = Button(self.master, text="Open Image File", command=lambda: self.handleImage(self.t2))
 
-        self.t1.grid(row=9, column=0, sticky=W + E)
-        self.t2.grid(row=9, column=1, sticky=W + E)
-        self.t3.grid(row=9, column=2, sticky=W + E)
+        self.t1.grid(row=11, column=0, sticky=W + E)
+        self.t2.grid(row=11, column=1, sticky=W + E)
+        self.t3.grid(row=11, column=2, sticky=W + E)
 
     def __init__(self, ctrl, master=None):
         if master is None:
