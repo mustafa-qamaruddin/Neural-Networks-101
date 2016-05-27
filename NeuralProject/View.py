@@ -2,6 +2,8 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter import messagebox
 
+from numpy.ma.bench import timer
+
 
 class View(Frame):
     master = None
